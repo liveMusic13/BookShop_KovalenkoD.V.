@@ -11,6 +11,7 @@ const menuBook = document.querySelector('.menu-book');
 const loadMore = document.querySelector('.result__button-load-more');
 const outputBook = document.querySelector('.result__block-book-result');
 
+
 let NumberResult = 0;
 let categoriesBook = '';
 
@@ -34,7 +35,7 @@ function formatOutput(data, index) {
       ${data.items[index].volumeInfo.authors}
     </p>
     <h2 class="book-result__title">
-      ${data.items[index].volumeInfo.title}
+      ${data.items[index].volumeInfo.title.substr(0, 37) + '...'}
     </h2>
     <div class="book-result__block-rating">
       <div class="book-result__average-rating">
@@ -47,11 +48,12 @@ function formatOutput(data, index) {
       <div class="book-result__rating-count">${data.items[index].volumeInfo.maturityRating}</div>
     </div>
     <p class="book-result__description">
-      ${data.items[index].searchInfo.textSnippet}
+      ${data.items[index].searchInfo.textSnippet.substr(0, 92) + '...'}
     </p>
     <p class="book-result__price">
     ${data.items[index].saleInfo.retailPrice}
     </p>
+    <button class="book-result__buy" type="submit">buy now</button>
   </div>
 </div>`;
   return htmlStringBook;
@@ -69,6 +71,45 @@ function request(sub = menuBook.querySelector('.active').dataset.index) {
     .then(data => {
       data.items.forEach((elem, index) => {
         writeOutput(formatOutput(data, index));
+
+        let counter = 0;
+        const buyBook = document.querySelectorAll('.book-result__buy');
+        const countShop = document.querySelector('.menu__count-shop');
+
+        buyBook.forEach((button, buttonIndex) => {
+          button.addEventListener('click', () => {
+            const productLsKey = `book ${data.items[buttonIndex].volumeInfo.title}`;
+            const productInCart = JSON.parse(
+              localStorage.getItem(productLsKey)
+            );
+
+            console.log("here", productInCart, productLsKey);
+
+            if (productInCart) {
+              localStorage.setItem(productLsKey, null);
+              counter -= 1;
+
+              if (counter <= 0) {
+                countShop.style.display = "none";
+              } else {
+                countShop.textContent = counter;
+              }
+            } else {
+              countShop.style.display = "block";
+              countShop.textContent = ++counter;
+
+              let objektBook = {
+                author: data.items[index].volumeInfo.authors,
+                title: data.items[index].volumeInfo.title,
+                rating: data.items[index].volumeInfo.maturityRating,
+                description: data.items[index].searchInfo.textSnippet,
+                price: data.items[index].saleInfo.retailPrice,
+              };
+
+              localStorage.setItem(productLsKey, JSON.stringify(objektBook));
+            }
+          });
+        });
       });
     })
     .catch(error => console.error(error));
@@ -79,4 +120,7 @@ function clearOutput() {
   outputBook.innerHTML = '<button class="result__button-load-more" type="submit">load more</button>';
   NumberResult = 0;
 }
+
+
+
 

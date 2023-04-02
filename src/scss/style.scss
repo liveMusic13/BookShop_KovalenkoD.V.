@@ -264,6 +264,10 @@ body {
   height: 45px;
   border: 1px solid $colorPurple;
   background-color: white;
+
+  &:hover {
+    cursor: pointer;
+  }
 }
 
 .result__button-load-more {
